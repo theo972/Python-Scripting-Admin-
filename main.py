@@ -23,11 +23,9 @@ def try_write_cpu_info():
     cpu_info = SystemUtil.cpu_info()
     virtual_cpu_time = cpu_info["cpu_time"]
     virtual_cpu_percent = cpu_info["cpu_percent"]
-    virtual_cpu_stats = cpu_info["cpu_stats"]
 
     sequence = [f"cpu_info,host={mac_address()} cpu_time={virtual_cpu_time}",
-                f"cpu_info,host={mac_address()} cpu_percent={virtual_cpu_percent}",
-                f"cpu_info,host={mac_address()} cpu_stats={virtual_cpu_stats}"]
+                f"cpu_info,host={mac_address()} cpu_percent={virtual_cpu_percent}"]
     return sequence
 
 
@@ -48,14 +46,11 @@ def try_write_disk_info():
     disk_memory_total = memory_info["disk_usage_total"]
     disk_memory_used = memory_info["disk_usage_used"]
     disk_memory_used_percent = memory_info["disk_usage_percent"]
-    disk_counter_read_count = memory_info["disk_counter_read_count"]
-    disk_counter_write_count = memory_info["disk_counter_write_count"]
+
 
     sequence = [f"disk_info,host={mac_address()} disk_memory_total={disk_memory_total}",
                 f"disk_info,host={mac_address()} disk_memory_used={disk_memory_used}",
-                f"disk_info,host={mac_address()} disk_memory_used_percent={disk_memory_used_percent}",
-                f"disk_info,host={mac_address()} disk_counter_read_count={disk_counter_read_count}",
-                f"disk_info,host={mac_address()} disk_counter_write_count={disk_counter_write_count}"]
+                f"disk_info,host={mac_address()} disk_memory_used_percent={disk_memory_used_percent}"]
     return sequence
 
 
@@ -63,13 +58,10 @@ def try_write_network_info():
     network_info = SystemUtil.network_info()
     net_counter_bytes_sent = network_info["net_counter_bytes_sent"]
     net_counter_bytes_received = network_info["net_counter_bytes_recv"]
-    net_counter_packets_sent = network_info["net_counter_packets_sent"]
-    net_counter_packets_received = network_info["net_counter_packets_recv"]
+
 
     sequence = [f"network_info,host={mac_address()} net_counter_bytes_sent={net_counter_bytes_sent}",
-                f"network_info,host={mac_address()} net_counter_bytes_received={net_counter_bytes_received}",
-                f"network_info,host={mac_address()} net_counter_packets_sent={net_counter_packets_sent}",
-                f"network_info,host={mac_address()} net_counter_packets_received={net_counter_packets_received}"]
+                f"network_info,host={mac_address()} net_counter_bytes_received={net_counter_bytes_received}"]
     return sequence
 
 
@@ -95,7 +87,6 @@ def try_write():
     # print(data)
     # write_api.write(bucket, org, data)
 
-
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
     print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
@@ -103,8 +94,20 @@ def print_hi(name):
     try_write()
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print_hi('PyCharm')
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    cpu_info = SystemUtil.cpu_info()
+    print(cpu_info)
+
+    memory_info = SystemUtil.memory_info()
+    print(memory_info)
+
+    disk_info = SystemUtil.disk_info()
+    print(disk_info)
+
+    network_info = SystemUtil.network_info()
+    print(network_info)
+
+    sensor_info = SystemUtil.sensor_info()
+    print(sensor_info)

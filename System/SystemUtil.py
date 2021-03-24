@@ -10,7 +10,7 @@ def cpu_info():
     cpu = {
         'cpu_time': psutil.cpu_times().user,
         'cpu_percent': psutil.cpu_percent(interval=1),
-        'cpu_stats': psutil.cpu_stats().ctx_switches
+
     }
 
     return cpu
@@ -27,17 +27,13 @@ def memory_info():
 def disk_info():
     disk = {'disk_usage_percent': psutil.disk_usage('/').percent,
             'disk_usage_total': psutil.disk_usage('/').total,
-            'disk_usage_used': psutil.disk_usage('/').used,
-            'disk_counter_read_count': psutil.disk_io_counters().read_count,
-            'disk_counter_write_count': psutil.disk_io_counters().write_count}
+            'disk_usage_used': psutil.disk_usage('/').used}
     return disk
 
 
 def network_info():
     network = {'net_counter_bytes_sent': psutil.net_io_counters(pernic=False, nowrap=True).bytes_sent,
                'net_counter_bytes_recv': psutil.net_io_counters(pernic=False, nowrap=True).bytes_recv,
-               'net_counter_packets_sent': psutil.net_io_counters(pernic=False, nowrap=True).packets_sent,
-               'net_counter_packets_recv': psutil.net_io_counters(pernic=False, nowrap=True).packets_recv
                }
     return network
 
