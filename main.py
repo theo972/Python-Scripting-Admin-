@@ -11,9 +11,9 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 # hostname = socket.gethostname()
 # You can generate a Token from the "Tokens Tab" in the UI
-token = "YxNxUR3neGuTvdhcbnMg7Ra3EzSNvyMgmOY69gSRIwNV3YhUQViMYB1GXqzkwVcYNoUTVJF6_4Bpzaa-l68OjA=="
-org = "anthony.bac@edu.itescia.fr"
-bucket = "dear_god"
+token = "iXs8kq_scyCVtXNGqee34TSD8J7PnCy5Adm6kO57o6_nNEDQZh1vKv34i1fmXebcCJppPP7oZe3xd3xMX0--0w=="
+org = "theovady.moutty@edu.itescia.fr"
+bucket = "frigreen"
 
 client = InfluxDBClient(url="https://eu-central-1-1.aws.cloud2.influxdata.com", token=token)
 
@@ -114,5 +114,3 @@ def print_hi(name):
 
 if __name__ == '__main__':
     print_hi('PyCharm')
-
-
