@@ -9,8 +9,7 @@ from datetime import datetime
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-
-#hostname = socket.gethostname()
+# hostname = socket.gethostname()
 # You can generate a Token from the "Tokens Tab" in the UI
 token = "YxNxUR3neGuTvdhcbnMg7Ra3EzSNvyMgmOY69gSRIwNV3YhUQViMYB1GXqzkwVcYNoUTVJF6_4Bpzaa-l68OjA=="
 org = "anthony.bac@edu.itescia.fr"
@@ -20,6 +19,10 @@ client = InfluxDBClient(url="https://eu-central-1-1.aws.cloud2.influxdata.com", 
 
 
 def try_write_cpu_info():
+    """
+       Retrieves information from the cpu in the form of a dictionary and sends them in the form of a sequence
+       :return: sequence
+    """
     cpu_info = SystemUtil.cpu_info()
     virtual_cpu_time = cpu_info["cpu_time"]
     virtual_cpu_percent = cpu_info["cpu_percent"]
@@ -30,6 +33,10 @@ def try_write_cpu_info():
 
 
 def try_write_memory_info():
+    """
+       Retrieves information from the memory in the form of a dictionary and sends them in the form of a sequence
+       :return: sequence
+    """
     memory_info = SystemUtil.memory_info()
     virtual_memory_total = memory_info["virtual_memory_total"]
     virtual_memory_available = memory_info["virtual_memory_available"]
@@ -42,11 +49,14 @@ def try_write_memory_info():
 
 
 def try_write_disk_info():
+    """
+       Retrieves information from the disk in the form of a dictionary and sends them in the form of a sequence
+       :return: sequence
+    """
     memory_info = SystemUtil.disk_info()
     disk_memory_total = memory_info["disk_usage_total"]
     disk_memory_used = memory_info["disk_usage_used"]
     disk_memory_used_percent = memory_info["disk_usage_percent"]
-
 
     sequence = [f"disk_info,host={mac_address()} disk_memory_total={disk_memory_total}",
                 f"disk_info,host={mac_address()} disk_memory_used={disk_memory_used}",
@@ -55,10 +65,13 @@ def try_write_disk_info():
 
 
 def try_write_network_info():
+    """
+       Retrieves information from the network in the form of a dictionary and sends them in the form of a sequence
+       :return: sequence
+    """
     network_info = SystemUtil.network_info()
     net_counter_bytes_sent = network_info["net_counter_bytes_sent"]
     net_counter_bytes_received = network_info["net_counter_bytes_recv"]
-
 
     sequence = [f"network_info,host={mac_address()} net_counter_bytes_sent={net_counter_bytes_sent}",
                 f"network_info,host={mac_address()} net_counter_bytes_received={net_counter_bytes_received}"]
@@ -66,6 +79,10 @@ def try_write_network_info():
 
 
 def try_write_sensor_info():
+    """
+       Retrieves information from the sensor in the form of a dictionary and sends them in the form of a sequence
+      :return: sequence
+    """
     sensor_info = SystemUtil.sensor_info()
     sensor_battery = sensor_info["sensor_battery"]
 
@@ -74,6 +91,7 @@ def try_write_sensor_info():
 
 
 def try_write():
+    """ Retrieve the sequences and send them to the database """
     write_api = client.write_api(write_options=SYNCHRONOUS)
 
     write_api.write(bucket, org, try_write_cpu_info())
@@ -82,10 +100,10 @@ def try_write():
     write_api.write(bucket, org, try_write_network_info())
     write_api.write(bucket, org, try_write_sensor_info())
 
-
     # data = f'mem,host={mac_address()} used_percent={percent}'
     # print(data)
     # write_api.write(bucket, org, data)
+
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
@@ -97,17 +115,4 @@ def print_hi(name):
 if __name__ == '__main__':
     print_hi('PyCharm')
 
-    cpu_info = SystemUtil.cpu_info()
-    print(cpu_info)
 
-    memory_info = SystemUtil.memory_info()
-    print(memory_info)
-
-    disk_info = SystemUtil.disk_info()
-    print(disk_info)
-
-    network_info = SystemUtil.network_info()
-    print(network_info)
-
-    sensor_info = SystemUtil.sensor_info()
-    print(sensor_info)
