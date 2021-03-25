@@ -4,17 +4,16 @@ import socket
 
 from getmac import get_mac_address as mac_address
 from System import SystemUtil
-from datetime import datetime
+from datetime import datetime, time
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-
-#hostname = socket.gethostname()
+# hostname = socket.gethostname()
 # You can generate a Token from the "Tokens Tab" in the UI
-token = "YxNxUR3neGuTvdhcbnMg7Ra3EzSNvyMgmOY69gSRIwNV3YhUQViMYB1GXqzkwVcYNoUTVJF6_4Bpzaa-l68OjA=="
-org = "anthony.bac@edu.itescia.fr"
-bucket = "dear_god"
+token = "iXs8kq_scyCVtXNGqee34TSD8J7PnCy5Adm6kO57o6_nNEDQZh1vKv34i1fmXebcCJppPP7oZe3xd3xMX0--0w=="
+org = "theovady.moutty@edu.itescia.fr"
+bucket = "frigreen"
 
 client = InfluxDBClient(url="https://eu-central-1-1.aws.cloud2.influxdata.com", token=token)
 
@@ -42,11 +41,10 @@ def try_write_memory_info():
 
 
 def try_write_disk_info():
-    memory_info = SystemUtil.disk_info()
-    disk_memory_total = memory_info["disk_usage_total"]
-    disk_memory_used = memory_info["disk_usage_used"]
-    disk_memory_used_percent = memory_info["disk_usage_percent"]
-
+    disk_info = SystemUtil.disk_info()
+    disk_memory_total = disk_info["disk_usage_total"]
+    disk_memory_used = disk_info["disk_usage_used"]
+    disk_memory_used_percent = disk_info["disk_usage_percent"]
 
     sequence = [f"disk_info,host={mac_address()} disk_memory_total={disk_memory_total}",
                 f"disk_info,host={mac_address()} disk_memory_used={disk_memory_used}",
@@ -58,7 +56,6 @@ def try_write_network_info():
     network_info = SystemUtil.network_info()
     net_counter_bytes_sent = network_info["net_counter_bytes_sent"]
     net_counter_bytes_received = network_info["net_counter_bytes_recv"]
-
 
     sequence = [f"network_info,host={mac_address()} net_counter_bytes_sent={net_counter_bytes_sent}",
                 f"network_info,host={mac_address()} net_counter_bytes_received={net_counter_bytes_received}"]
@@ -76,38 +73,23 @@ def try_write_sensor_info():
 def try_write():
     write_api = client.write_api(write_options=SYNCHRONOUS)
 
-    write_api.write(bucket, org, try_write_cpu_info())
-    write_api.write(bucket, org, try_write_memory_info())
-    write_api.write(bucket, org, try_write_disk_info())
-    write_api.write(bucket, org, try_write_network_info())
-    write_api.write(bucket, org, try_write_sensor_info())
-
-
+    launched = False
+    while True:
+        if datetime.now().second % 5 == 0:
+            if not launched:
+                write_api.write(bucket, org, try_write_cpu_info())
+                write_api.write(bucket, org, try_write_memory_info())
+                write_api.write(bucket, org, try_write_disk_info())
+                write_api.write(bucket, org, try_write_network_info())
+                write_api.write(bucket, org, try_write_sensor_info())
+                launched = True
+                print("Update")
+        else:
+            launched = False
     # data = f'mem,host={mac_address()} used_percent={percent}'
     # print(data)
     # write_api.write(bucket, org, data)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
-
-    try_write()
-
 
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-    cpu_info = SystemUtil.cpu_info()
-    print(cpu_info)
-
-    memory_info = SystemUtil.memory_info()
-    print(memory_info)
-
-    disk_info = SystemUtil.disk_info()
-    print(disk_info)
-
-    network_info = SystemUtil.network_info()
-    print(network_info)
-
-    sensor_info = SystemUtil.sensor_info()
-    print(sensor_info)
+    try_write()

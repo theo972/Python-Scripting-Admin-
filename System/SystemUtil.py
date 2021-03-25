@@ -7,6 +7,10 @@ def print_hi(name):
 
 
 def cpu_info():
+    """
+        Gather the info from the device's cpu and returns it under dictionary form
+    :return:
+    """
     cpu = {
         'cpu_time': psutil.cpu_times().user,
         'cpu_percent': psutil.cpu_percent(interval=1),
