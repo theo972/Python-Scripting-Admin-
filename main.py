@@ -1,10 +1,12 @@
+import sched
+
 import influxdb_client
 import System
 import socket
 
 from getmac import get_mac_address as mac_address
 from System import SystemUtil
-from datetime import datetime, time
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -16,9 +18,14 @@ org = "theovady.moutty@edu.itescia.fr"
 bucket = "frigreen"
 
 client = InfluxDBClient(url="https://eu-central-1-1.aws.cloud2.influxdata.com", token=token)
+write_api = client.write_api(write_options=SYNCHRONOUS)
 
 
 def try_write_cpu_info():
+    """
+        get every info from processor and returns it as a sequence
+    :return:
+    """
     cpu_info = SystemUtil.cpu_info()
     virtual_cpu_time = cpu_info["cpu_time"]
     virtual_cpu_percent = cpu_info["cpu_percent"]
@@ -29,6 +36,10 @@ def try_write_cpu_info():
 
 
 def try_write_memory_info():
+    """
+        get every info from ram and returns it as a sequence
+    :return:
+    """
     memory_info = SystemUtil.memory_info()
     virtual_memory_total = memory_info["virtual_memory_total"]
     virtual_memory_available = memory_info["virtual_memory_available"]
@@ -41,6 +52,10 @@ def try_write_memory_info():
 
 
 def try_write_disk_info():
+    """
+        get every info from disk and returns it as a sequence
+    :return:
+    """
     disk_info = SystemUtil.disk_info()
     disk_memory_total = disk_info["disk_usage_total"]
     disk_memory_used = disk_info["disk_usage_used"]
@@ -53,6 +68,10 @@ def try_write_disk_info():
 
 
 def try_write_network_info():
+    """
+        get every info from network and returns it as a sequence
+    :return:
+    """
     network_info = SystemUtil.network_info()
     net_counter_bytes_sent = network_info["net_counter_bytes_sent"]
     net_counter_bytes_received = network_info["net_counter_bytes_recv"]
@@ -63,6 +82,10 @@ def try_write_network_info():
 
 
 def try_write_sensor_info():
+    """
+        get every info from sensor and returns it as a sequence
+    :return:
+    """
     sensor_info = SystemUtil.sensor_info()
     sensor_battery = sensor_info["sensor_battery"]
 
@@ -71,25 +94,30 @@ def try_write_sensor_info():
 
 
 def try_write():
-    write_api = client.write_api(write_options=SYNCHRONOUS)
+    """
+    update every sequences on database
+    :return:
+    """
+    write_api.write(bucket, org, try_write_cpu_info())
+    write_api.write(bucket, org, try_write_memory_info())
+    write_api.write(bucket, org, try_write_disk_info())
+    write_api.write(bucket, org, try_write_network_info())
+    write_api.write(bucket, org, try_write_sensor_info())
+    print("Update")
 
-    launched = False
-    while True:
-        if datetime.now().second % 5 == 0:
-            if not launched:
-                write_api.write(bucket, org, try_write_cpu_info())
-                write_api.write(bucket, org, try_write_memory_info())
-                write_api.write(bucket, org, try_write_disk_info())
-                write_api.write(bucket, org, try_write_network_info())
-                write_api.write(bucket, org, try_write_sensor_info())
-                launched = True
-                print("Update")
-        else:
-            launched = False
-    # data = f'mem,host={mac_address()} used_percent={percent}'
-    # print(data)
-    # write_api.write(bucket, org, data)
+
+def interval_try_write():
+    """
+    Prepare a scheduler with interval for every try_write()
+    :return:
+    """
+    test_scheduler = BlockingScheduler()
+    test_scheduler.add_job(try_write, 'interval', seconds=5)
+    try:
+        test_scheduler.start()
+    except (KeyboardInterrupt, SystemError):
+        pass
 
 
 if __name__ == '__main__':
-    try_write()
+    interval_try_write()
