@@ -1,10 +1,12 @@
+import sched
+
 import influxdb_client
 import System
 import socket
 
 from getmac import get_mac_address as mac_address
 from System import SystemUtil
-from datetime import datetime
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -16,6 +18,7 @@ org = "theovady.moutty@edu.itescia.fr"
 bucket = "frigreen"
 
 client = InfluxDBClient(url="https://eu-central-1-1.aws.cloud2.influxdata.com", token=token)
+write_api = client.write_api(write_options=SYNCHRONOUS)
 
 
 def try_write_cpu_info():
@@ -53,10 +56,10 @@ def try_write_disk_info():
        Retrieves information from the disk in the form of a dictionary and sends them in the form of a sequence
        :return: sequence
     """
-    memory_info = SystemUtil.disk_info()
-    disk_memory_total = memory_info["disk_usage_total"]
-    disk_memory_used = memory_info["disk_usage_used"]
-    disk_memory_used_percent = memory_info["disk_usage_percent"]
+    disk_info = SystemUtil.disk_info()
+    disk_memory_total = disk_info["disk_usage_total"]
+    disk_memory_used = disk_info["disk_usage_used"]
+    disk_memory_used_percent = disk_info["disk_usage_percent"]
 
     sequence = [f"disk_info,host={mac_address()} disk_memory_total={disk_memory_total}",
                 f"disk_info,host={mac_address()} disk_memory_used={disk_memory_used}",
@@ -91,14 +94,16 @@ def try_write_sensor_info():
 
 
 def try_write():
-    """ Retrieve the sequences and send them to the database """
-    write_api = client.write_api(write_options=SYNCHRONOUS)
-
+    """
+    update every sequences on database
+    :return:
+    """
     write_api.write(bucket, org, try_write_cpu_info())
     write_api.write(bucket, org, try_write_memory_info())
     write_api.write(bucket, org, try_write_disk_info())
     write_api.write(bucket, org, try_write_network_info())
     write_api.write(bucket, org, try_write_sensor_info())
+    print("Update")
 
     # data = f'mem,host={mac_address()} used_percent={percent}'
     # print(data)
@@ -112,5 +117,18 @@ def print_hi(name):
     try_write()
 
 
+def interval_try_write():
+    """
+    Prepare a scheduler with interval for every try_write()
+    :return:
+    """
+    test_scheduler = BlockingScheduler()
+    test_scheduler.add_job(try_write, 'interval', seconds=5)
+    try:
+        test_scheduler.start()
+    except (KeyboardInterrupt, SystemError):
+        pass
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    interval_try_write()
